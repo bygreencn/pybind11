@@ -117,6 +117,16 @@ PYBIND11_NOINLINE inline handle get_object_handle(const void *ptr) {
     return handle((PyObject *) it->second);
 }
 
+inline PyThreadState *get_thread_state_unchecked() {
+    /* Version 3.5.2 introduced _PyThreadState_UncheckedGet() */
+#if PY_VERSION_HEX >= 0x030502F0
+    return _PyThreadState_UncheckedGet();
+#else
+    /* Work around an annoying assertion in PyThreadState_Get */
+    return PyThreadState_GetDict() ? PyThreadState_Get() : nullptr;
+#endif
+}
+
 class type_caster_generic {
 public:
     PYBIND11_NOINLINE type_caster_generic(const std::type_info &type_info)
